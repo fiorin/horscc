@@ -13,10 +13,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="min-h-screen bg-gray-50 text-gray-900">
-        <nav className="bg-white shadow mb-8">
+      <body className="min-h-screen text-gray-900">
+        <nav className="bg-[#111] text-[#eee] shadow mb-8">
           <div className="max-w-5xl mx-auto px-4 py-3 flex gap-4">
-            <Link href="/">Home</Link>
+            <Link href="/">Hom1e</Link>
             <Link href="/cars">Cars</Link>
             <Link href="/about">About</Link>
           </div>

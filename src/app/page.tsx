@@ -1,6 +1,6 @@
 "use client";
 
-import { ShelfGrid } from "@/components/ShelfGrid";
+import { ShelfGrid } from "@/components/shelf/ShelfGrid";
 
 const SHELF_ID = "52d48744-0418-4e88-9a75-1e6640c29083";
 

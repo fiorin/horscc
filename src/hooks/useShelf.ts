@@ -2,21 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
-
-export type ShelfPosition = {
-  id: string;
-  shelf_id: string;
-  x: number;
-  y: number;
-  car_id: string | null;
-};
-
-export type Shelf = {
-  id: string;
-  name: string;
-  width: number; // GRID_X
-  height: number; // GRID_Y
-};
+import type { Shelf, ShelfPosition } from "@/types";
 
 export function useShelf(shelfId: string) {
   const [shelf, setShelf] = useState<Shelf | null>(null);
@@ -29,7 +15,6 @@ export function useShelf(shelfId: string) {
     setError(null);
 
     try {
-      // Fetch shelf metadata
       const { data: shelfData, error: shelfError } = await supabase
         .from("shelves")
         .select("*")
@@ -50,9 +35,9 @@ export function useShelf(shelfId: string) {
         name: shelfData.name,
         width: shelfData.width,
         height: shelfData.height,
+        created_at: shelfData.created_at,
       });
 
-      // Fetch shelf positions
       const { data: posData, error: posError } = await supabase
         .from("shelf_positions")
         .select("*")
@@ -85,11 +70,38 @@ export function useShelf(shelfId: string) {
     source: { x: number; y: number },
     target: { x: number; y: number }
   ) {
-    const src = positions.find((p) => p.x === source.x && p.y === source.y);
-    const tgt = positions.find((p) => p.x === target.x && p.y === target.y);
+    let src = positions.find((p) => p.x === source.x && p.y === source.y);
+    let tgt = positions.find((p) => p.x === target.x && p.y === target.y);
+
+    const ensurePosition = async (pos: { x: number; y: number }) => {
+      const existing = positions.find((p) => p.x === pos.x && p.y === pos.y);
+      if (existing) return existing;
+
+      const { data, error } = await supabase
+        .from("shelf_positions")
+        .upsert(
+          { shelf_id: shelfId, x: pos.x, y: pos.y, car_id: null },
+          { onConflict: "shelf_id,x,y" }
+        )
+        .select()
+        .single();
+
+      if (error) {
+        console.error("Error creating missing position:", error);
+        throw error;
+      }
+
+      setPositions((prev) => [...prev, data]);
+      return data;
+    };
+
+    if (!src) src = await ensurePosition(source);
+    if (!tgt) tgt = await ensurePosition(target);
 
     if (!src || !tgt) {
-      console.warn("Invalid swap: missing source or target position.");
+      console.error(
+        "Source or target position is undefined after ensurePosition."
+      );
       return;
     }
 

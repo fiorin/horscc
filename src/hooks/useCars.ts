@@ -2,22 +2,10 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
-
-export type Car = {
-  id: string;
-  name: string;
-  description: string;
-  year: number;
-  brand: string;
-  color: string;
-  is_rubber_tires: boolean | null;
-  is_metal_body: boolean | null;
-  image_url: string | null;
-  created_at: string;
-};
+import type { Car } from "@/types";
 
 type UseCarsOptions = {
-  ids?: string[]; // optional list of specific car IDs
+  ids?: string[];
   enabled?: boolean;
 };
 
@@ -38,7 +26,6 @@ export function useCars({ ids, enabled = true }: UseCarsOptions = {}) {
       .order("created_at", { ascending: false });
 
     if (memoizedIds) {
-      // if ids is defined (even empty), filter by them
       if (memoizedIds.length === 0) {
         setCars([]);
         setLoading(false);

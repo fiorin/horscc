@@ -20,7 +20,10 @@
 }
 
 body {
-  background: var(--background);
+  @apply min-h-screen text-gray-900;
+  background-image: url("/bg.png");
+  background-position: center;
+  background-attachment: fixed;
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }

@@ -81,6 +81,17 @@ export function useCars({ ids, enabled = true }: UseCarsOptions = {}) {
     setCars((prev) => prev.filter((c) => c.id !== id));
   }
 
+  async function getCarById(id: string) {
+    const { data, error } = await supabase
+      .from("cars")
+      .select("*")
+      .eq("id", id)
+      .single();
+
+    if (error) console.error(error);
+    return data;
+  }
+
   const carsById = cars.reduce((acc, car) => {
     acc[car.id] = car;
     return acc;
@@ -91,6 +102,7 @@ export function useCars({ ids, enabled = true }: UseCarsOptions = {}) {
     carsById,
     loading,
     error,
+    getCarById,
     fetchCars,
     addCar,
     updateCar,

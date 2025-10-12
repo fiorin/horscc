@@ -9,6 +9,12 @@ import { ShelfCell } from "./ShelfCell";
 
 export function ShelfGrid({ shelfId }: { shelfId: string }) {
   const [hovered, setHovered] = useState<{ x: number; y: number } | null>(null);
+  const [dragging, setDragging] = useState<{ x: number; y: number } | null>(
+    null
+  );
+  const [activeCell, setActiveCell] = useState<{ x: number; y: number } | null>(
+    null
+  );
 
   const { shelf, positions, swapCars, assignCar, removeCar } =
     useShelf(shelfId);
@@ -16,15 +22,7 @@ export function ShelfGrid({ shelfId }: { shelfId: string }) {
 
   const GRID_X = shelf?.width ?? 2;
   const GRID_Y = shelf?.height ?? 10;
-
   const containerRef = useRef<HTMLDivElement>(null);
-
-  const [dragging, setDragging] = useState<{ x: number; y: number } | null>(
-    null
-  );
-  const [activeCell, setActiveCell] = useState<{ x: number; y: number } | null>(
-    null
-  );
 
   const assignedCarIds = useMemo(
     () => positions.map((p) => p.car_id).filter(Boolean) as string[],
@@ -81,18 +79,28 @@ export function ShelfGrid({ shelfId }: { shelfId: string }) {
         })}
       </div>
 
-      {activeCell && <ShelfOverlay />}
+      {/* Opacity black background + modal */}
       {activeCell && (
-        <CarSelector
-          activeCell={activeCell}
-          availableCars={availableCars}
-          onSelect={handleSelect}
-          onClose={() => setActiveCell(null)}
-        />
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm animate-fadeIn"
+          onClick={() => setActiveCell(null)}
+        >
+          <div
+            className="bg-[#222] shadow-2xl text-[#eee] max-w-lg w-full transform transition-all duration-200 animate-scaleIn"
+            onClick={(e) => e.stopPropagation()} // prevent closing when clicking inside
+          >
+            <CarSelector
+              activeCell={activeCell}
+              availableCars={availableCars}
+              onSelect={handleSelect}
+              onClose={() => setActiveCell(null)}
+            />
+          </div>
+        </div>
       )}
 
       {carsLoading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-white/50 text-gray-500">
+        <div className="absolute inset-0 flex items-center justify-center bg-black/50 text-gray-300">
           Loading cars...
         </div>
       )}

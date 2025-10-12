@@ -17,6 +17,7 @@ const colors = [
 
 export type CarFormData = {
   name: string;
+  alias: string;
   description: string;
   year: number;
   brand: string;
@@ -39,6 +40,7 @@ export default function CarForm({
 }: CarFormProps) {
   const [form, setForm] = useState<CarFormData>({
     name: "",
+    alias: "",
     description: "",
     year: new Date().getFullYear(),
     brand: "",
@@ -82,6 +84,15 @@ export default function CarForm({
         value={form.name}
         onChange={handleChange}
         required
+      />
+
+      <label className="block text-sm font-medium text-gray-700">Alias</label>
+      <input
+        type="text"
+        name="alias"
+        value={form.alias}
+        onChange={handleChange}
+        className="mt-1 block w-full border border-gray-300 rounded-md p-2"
       />
 
       <textarea

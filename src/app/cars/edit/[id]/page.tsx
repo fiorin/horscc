@@ -47,6 +47,7 @@ export default function EditCarPage() {
 
         setInitialData({
           name: data.name,
+          alias: data.alias,
           description: data.description,
           year: data.year,
           brand: data.brand,

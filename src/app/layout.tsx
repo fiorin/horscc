@@ -16,7 +16,7 @@ export default function RootLayout({
       <body className="min-h-screen text-gray-900">
         <nav className="bg-[#111] text-[#eee] shadow mb-8">
           <div className="max-w-5xl mx-auto px-4 py-3 flex gap-4">
-            <Link href="/">Hom1e</Link>
+            <Link href="/">Home</Link>
             <Link href="/cars">Cars</Link>
             <Link href="/about">About</Link>
           </div>

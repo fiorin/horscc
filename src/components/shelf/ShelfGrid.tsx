@@ -15,6 +15,7 @@ export function ShelfGrid({ shelfId }: { shelfId: string }) {
   const [activeCell, setActiveCell] = useState<{ x: number; y: number } | null>(
     null
   );
+  const [loadingShelf, setLoadingShelf] = useState(true);
 
   const {
     shelf,
@@ -26,13 +27,24 @@ export function ShelfGrid({ shelfId }: { shelfId: string }) {
     removeCar,
     fetchShelf,
   } = useShelf(shelfId);
+
   const { carsById, cars, loading: carsLoading } = useCars();
 
-  console.log("ShelfGrid render", { shelfId, shelf, gridX, gridY });
-
-  // Re-fetch shelf whenever shelfId changes
+  // Handle shelf loading visibility
   useEffect(() => {
-    if (shelfId) fetchShelf();
+    let ignore = false;
+
+    async function load() {
+      setLoadingShelf(true);
+      await fetchShelf();
+      if (!ignore) setLoadingShelf(false);
+    }
+
+    if (shelfId) load();
+
+    return () => {
+      ignore = true;
+    };
   }, [shelfId, fetchShelf]);
 
   const assignedCarIds = useMemo(
@@ -59,32 +71,40 @@ export function ShelfGrid({ shelfId }: { shelfId: string }) {
 
   return (
     <div ref={containerRef} className="relative p-4">
-      <div
-        className="grid gap-3 justify-items-center"
-        style={{
-          gridTemplateColumns: `repeat(${gridX}, minmax(0, 1fr))`,
-          maxWidth: gridX * 200,
-          margin: "0 auto",
-        }}
-      >
-        {gridPositions.map((row, y) =>
-          row.map((pos, x) => (
-            <ShelfCell
-              key={`${x}-${y}`}
-              x={x}
-              y={y}
-              car={pos?.car_id ? carsById[pos.car_id] : null}
-              dragging={dragging}
-              hovered={hovered}
-              setDragging={setDragging}
-              setHovered={setHovered}
-              swapCars={swapCars}
-              setActiveCell={setActiveCell}
-              removeCar={removeCar}
-            />
-          ))
-        )}
-      </div>
+      {loadingShelf ? (
+        <div className="absolute inset-0 flex items-center justify-center bg-black/40 text-white z-20">
+          Loading shelf...
+        </div>
+      ) : (
+        <div
+          className="grid gap-3 justify-items-center transition-opacity duration-200"
+          style={{
+            gridTemplateColumns: `repeat(${gridX}, minmax(0, 1fr))`,
+            maxWidth: gridX * 200,
+            margin: "0 auto",
+            opacity: loadingShelf ? 0 : 1,
+          }}
+        >
+          {gridPositions.map((row, y) =>
+            row.map((pos, x) => (
+              <ShelfCell
+                key={`${x}-${y}`}
+                x={x}
+                y={y}
+                car={pos?.car_id ? carsById[pos.car_id] : null}
+                dragging={dragging}
+                hovered={hovered}
+                setDragging={setDragging}
+                setHovered={setHovered}
+                swapCars={swapCars}
+                setActiveCell={setActiveCell}
+                removeCar={removeCar}
+              />
+            ))
+          )}
+        </div>
+      )}
+
       {activeCell && <ShelfOverlay />}
       {activeCell && (
         <CarSelector
@@ -94,6 +114,7 @@ export function ShelfGrid({ shelfId }: { shelfId: string }) {
           onClose={() => setActiveCell(null)}
         />
       )}
+
       {carsLoading && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/50 text-gray-300">
           Loading cars...

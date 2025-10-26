@@ -32,7 +32,7 @@ export default function HomePage() {
       <ShelfSelector
         shelves={shelves}
         selectedShelfId={selectedShelfId}
-        onChange={setSelectedShelfId} // <--- this now updates state
+        onChange={setSelectedShelfId}
         loading={loading}
       />
       {selectedShelfId && <ShelfGrid shelfId={selectedShelfId} />}

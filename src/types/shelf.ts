@@ -1,8 +1,8 @@
 export type Shelf = {
   id: string;
   name: string;
-  width: number;
-  height: number;
+  grid_x: number;
+  grid_y: number;
   created_at: string;
 };
 

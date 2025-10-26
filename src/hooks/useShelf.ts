@@ -10,7 +10,6 @@ export function useShelf(shelfId: string) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
-  // Fetch shelf metadata and positions
   const fetchShelf = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -29,11 +28,12 @@ export function useShelf(shelfId: string) {
         return;
       }
 
+      console.log("Fetched shelf data:", shelfData);
       const newShelf: Shelf = {
         id: shelfData.id,
         name: shelfData.name,
-        width: shelfData.width,
-        height: shelfData.height,
+        grid_x: shelfData.grid_x,
+        grid_y: shelfData.grid_y,
         created_at: shelfData.created_at,
       };
       setShelf(newShelf);
@@ -64,9 +64,8 @@ export function useShelf(shelfId: string) {
     if (shelfId) fetchShelf();
   }, [shelfId, fetchShelf]);
 
-  // Grid dimensions and 2D positions array
-  const gridX = shelf?.width ?? 2;
-  const gridY = shelf?.height ?? 10;
+  const gridX = shelf?.grid_x ?? 2;
+  const gridY = shelf?.grid_y ?? 10;
 
   const gridPositions: (ShelfPosition | null)[][] = Array.from(
     { length: gridY },

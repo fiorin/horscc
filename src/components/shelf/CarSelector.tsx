@@ -1,8 +1,8 @@
 "use client";
 
+import Image from "next/image";
 import type { Car } from "@/types";
 import { useState, useRef, useEffect } from "react";
-import Image from "next/image";
 
 export function CarSelector({
   availableCars,
@@ -34,33 +34,35 @@ export function CarSelector({
   if (!open) return null;
 
   return (
-    <div
-      ref={selectorRef}
-      className="bg-[#222] text-[#eee] border border-gray-700 rounded-lg shadow-lg max-h-80 overflow-y-auto box-border"
-    >
-      {availableCars.length === 0 ? (
-        <p className="p-4 text-gray-400 text-sm">No available cars</p>
-      ) : (
-        availableCars.map((car) => (
-          <button
-            key={car.id}
-            onClick={() => onSelect(car.id)}
-            className="w-full flex items-center gap-3 px-2 py-2 hover:bg-[#333] transition-colors rounded-none text-left box-border cursor-pointer"
-          >
-            <Image
-              src={car.image_url ?? "/placeholder.jpg"}
-              alt={car.name}
-              fill
-              className="w-10 h-10 object-contain rounded-md flex-shrink-0"
-              priority
-            />
-            <div className="flex flex-col">
-              <span className="font-semibold">{car.name}</span>
-              <span className="text-gray-400 text-sm">{car.brand}</span>
-            </div>
-          </button>
-        ))
-      )}
+    <div className="fixed inset-0 z-[1000] bg-black/60 flex items-center justify-center">
+      <div
+        ref={selectorRef}
+        className="bg-[#222] text-[#eee] border border-gray-700 rounded-lg shadow-lg max-h-[80vh] w-[90%] max-w-md overflow-y-auto"
+      >
+        {availableCars.length === 0 ? (
+          <p className="p-4 text-gray-400 text-sm">No available cars</p>
+        ) : (
+          availableCars.map((car) => (
+            <button
+              key={car.id}
+              onClick={() => onSelect(car.id)}
+              className="w-full flex items-center gap-3 px-2 py-2 hover:bg-[#333] transition-colors text-left cursor-pointer"
+            >
+              <Image
+                src={car.image_url ?? "/placeholder.jpg"}
+                alt={car.name}
+                width={40}
+                height={40}
+                className="w-10 h-10 object-contain rounded-md flex-shrink-0"
+              />
+              <div className="flex flex-col">
+                <span className="font-semibold">{car.name}</span>
+                <span className="text-gray-400 text-sm">{car.brand}</span>
+              </div>
+            </button>
+          ))
+        )}
+      </div>
     </div>
   );
 }

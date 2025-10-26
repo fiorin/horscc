@@ -48,7 +48,6 @@ export default function CarDetailsPage() {
   if (!car)
     return <div className="p-8 text-center text-red-400">Car not found.</div>;
 
-  // 👇 Auto-generate gallery image URLs
   const slideImages = Array.from(
     { length: car.image_count },
     (_, i) => `/cars/slides/${car.id}_${i + 1}.jpg`

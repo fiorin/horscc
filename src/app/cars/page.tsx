@@ -2,6 +2,7 @@
 
 import { useCars } from "@/hooks/useCars";
 import Link from "next/link";
+import Image from "next/image";
 import { PencilIcon, TrashIcon } from "@heroicons/react/24/solid";
 
 export default function CarsPage() {
@@ -47,13 +48,13 @@ export default function CarsPage() {
                   href={`/cars/${car.id}`}
                   aria-label={`View details of ${car.name}`}
                 >
-                  {car.image_url && (
-                    <img
-                      src={car.image_url}
-                      alt={car.name}
-                      className="w-full mb-2 rounded-md"
-                    />
-                  )}
+                  <Image
+                    src={car.image_url ?? ""}
+                    alt={car.name}
+                    width={600}
+                    height={400}
+                    className="w-full mb-2 rounded-md"
+                  />
                 </Link>
 
                 <h2 className="text-lg font-semibold">{car.name}</h2>

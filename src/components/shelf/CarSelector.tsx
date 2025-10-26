@@ -2,9 +2,9 @@
 
 import type { Car } from "@/types";
 import { useState, useRef, useEffect } from "react";
+import Image from "next/image";
 
 export function CarSelector({
-  activeCell,
   availableCars,
   onSelect,
   onClose,
@@ -17,7 +17,6 @@ export function CarSelector({
   const [open, setOpen] = useState(true);
   const selectorRef = useRef<HTMLDivElement>(null);
 
-  // Close when clicking outside
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (
@@ -48,10 +47,12 @@ export function CarSelector({
             onClick={() => onSelect(car.id)}
             className="w-full flex items-center gap-3 px-2 py-2 hover:bg-[#333] transition-colors rounded-none text-left box-border cursor-pointer"
           >
-            <img
+            <Image
               src={car.image_url ?? "/placeholder.jpg"}
               alt={car.name}
+              fill
               className="w-10 h-10 object-contain rounded-md flex-shrink-0"
+              priority
             />
             <div className="flex flex-col">
               <span className="font-semibold">{car.name}</span>

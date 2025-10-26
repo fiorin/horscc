@@ -55,6 +55,8 @@ export default function EditCarPage() {
           is_rubber_tires: Boolean(data.is_rubber_tires),
           is_metal_body: Boolean(data.is_metal_body),
           image_url: data.image_url ?? "",
+          image_count: data.image_count,
+          buy_url: data.buy_url ?? "",
         });
       } catch (err) {
         console.error("Unexpected error loading car:", err);

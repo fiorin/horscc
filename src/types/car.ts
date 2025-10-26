@@ -10,4 +10,6 @@ export type Car = {
   is_metal_body: boolean | null;
   image_url?: string | null;
   created_at: string;
+  image_count: number;
+  buy_url?: string | null;
 };

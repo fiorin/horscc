@@ -1,14 +1,41 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { ShelfGrid } from "@/components/shelf/ShelfGrid";
-
-const SHELF_ID = "52d48744-0418-4e88-9a75-1e6640c29083";
+import { ShelfSelector } from "@/components/ShelfSelector";
+import { supabase } from "@/lib/supabaseClient";
+import type { Shelf } from "@/types";
 
 export default function HomePage() {
+  const [shelves, setShelves] = useState<Shelf[]>([]);
+  const [selectedShelfId, setSelectedShelfId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchShelves = async () => {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from("shelves")
+        .select("*")
+        .order("created_at", { ascending: true });
+      if (!error && data) {
+        setShelves(data);
+        if (data.length > 0) setSelectedShelfId(data[0].id);
+      }
+      setLoading(false);
+    };
+    fetchShelves();
+  }, []);
+
   return (
-    <div className="p-6">
-      <h1 className="text-3xl font-bold mb-6">My Hot Wheels Shelf</h1>
-      <ShelfGrid shelfId={SHELF_ID} />
+    <div className="px-6">
+      <ShelfSelector
+        shelves={shelves}
+        selectedShelfId={selectedShelfId}
+        onChange={setSelectedShelfId} // <--- this now updates state
+        loading={loading}
+      />
+      {selectedShelfId && <ShelfGrid shelfId={selectedShelfId} />}
     </div>
   );
 }

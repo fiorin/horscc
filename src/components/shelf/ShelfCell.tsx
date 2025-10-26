@@ -54,18 +54,19 @@ export function ShelfCell({
       }}
       onClick={() => !car && setActiveCell({ x, y })}
       className={`cursor-pointer relative flex items-center justify-center border-2 transition-all w-full
-    shadow-[inset_0_0_8px_2px_rgba(0,0,0,0.2)]
-    ${car ? "border-gray-400" : "border-gray-500 bg-gray-50/30"}
-    ${
-      !car && isHovered && !isDragging
-        ? "bg-gray-300 border-gray-400 border-solid shadow-[inset_0_0_16px_4px_rgba(0,0,0,0.1)]"
-        : ""
-    }
-    ${isDragging ? "opacity-50" : ""}
-  `}
+          shadow-[inset_0_0_8px_2px_rgba(0,0,0,0.2)]
+          ${car ? "border-gray-400" : "border-gray-500 bg-gray-50/30"}
+          ${
+            !car && isHovered && !isDragging
+              ? "bg-gray-300 border-gray-400 border-solid shadow-[inset_0_0_16px_4px_rgba(0,0,0,0.1)]"
+              : ""
+          }
+          ${isDragging ? "opacity-50" : ""}
+        `}
       style={{
         aspectRatio: "7 / 4",
         maxWidth: "200px",
+        background: car ? "#1b1b1bff" : undefined,
       }}
     >
       {car ? (

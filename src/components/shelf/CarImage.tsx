@@ -24,7 +24,7 @@ export function CarImage({
         <span className="font-small">{car.alias ?? car.name}</span>
       </div>
 
-      <div className="absolute top-1 right-1 flex items-center gap-1 px-1 py-1 rounded text-[#eee] text-xs">
+      <div className="absolute bottom-1 right-1 flex items-center gap-1 px-1 py-1 rounded text-[#eee] text-xs">
         <Link
           href={`/cars/${car.id}`}
           onClick={(e) => e.stopPropagation()}

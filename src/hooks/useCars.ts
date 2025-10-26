@@ -17,59 +17,75 @@ export function useCars({ ids, enabled = true }: UseCarsOptions = {}) {
   const memoizedIds = useMemo(() => ids ?? undefined, [ids]);
 
   const fetchCars = useCallback(async () => {
+    if (!enabled) return;
     setLoading(true);
     setError(null);
 
-    let query = supabase
-      .from("cars")
-      .select("*")
-      .order("created_at", { ascending: false });
+    try {
+      let query = supabase
+        .from("cars")
+        .select("*")
+        .order("created_at", { ascending: false });
 
-    if (memoizedIds) {
-      if (memoizedIds.length === 0) {
-        setCars([]);
-        setLoading(false);
-        return;
-      }
-      query = query.in("id", memoizedIds);
-    }
+      if (memoizedIds?.length) query = query.in("id", memoizedIds);
 
-    const { data, error } = await query;
+      const { data, error } = await query;
+      if (error) throw error;
 
-    if (error) {
-      setError(error);
-      console.error(error);
+      const cleanedData = (data ?? []).map((car) => ({
+        ...car,
+        image_url: `/cars/${car.image_url?.replace(/\\/g, "/") ?? ""}`,
+        image_count: Number(car.image_count) || 0,
+      }));
+
+      setCars(cleanedData);
+    } catch (err) {
+      console.error(err);
+      setError(err as Error);
       setCars([]);
-    } else {
-      setCars(data || []);
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
-  }, [memoizedIds]);
+  }, [enabled, memoizedIds]);
 
   useEffect(() => {
-    if (!enabled) return;
     fetchCars();
-  }, [enabled, fetchCars]);
+  }, [fetchCars]);
 
   async function addCar(car: Omit<Car, "id" | "created_at">) {
+    const cleanedCar = {
+      ...car,
+      image_url: car.image_url?.replace(/\\/g, "/") ?? "",
+      image_count: Number(car.image_count) || 0,
+      buy_url: car.buy_url || null,
+    };
+
     const { data, error } = await supabase
       .from("cars")
-      .insert(car)
+      .insert([cleanedCar])
       .select()
       .single();
+
     if (error) throw error;
     setCars((prev) => [data, ...prev]);
     return data;
   }
 
   async function updateCar(id: string, updates: Partial<Car>) {
+    const cleaned = {
+      ...updates,
+      image_url: updates.image_url?.replace(/\\/g, "/") ?? "",
+      image_count: Number(updates.image_count) || 0,
+      buy_url: updates.buy_url || null,
+    };
+
     const { data, error } = await supabase
       .from("cars")
-      .update(updates)
+      .update(cleaned)
       .eq("id", id)
       .select()
       .single();
+
     if (error) throw error;
     setCars((prev) => prev.map((c) => (c.id === id ? data : c)));
     return data;
@@ -88,24 +104,37 @@ export function useCars({ ids, enabled = true }: UseCarsOptions = {}) {
       .eq("id", id)
       .single();
 
-    if (error) console.error(error);
-    return data;
+    if (error) {
+      console.error(error);
+      return null;
+    }
+
+    return {
+      ...data,
+      image_url: `/cars/${data.image_url?.replace(/\\/g, "/") ?? ""}`,
+      image_count: Number(data.image_count) || 0,
+      buy_url: data.buy_url || null,
+    };
   }
 
-  const carsById = cars.reduce((acc, car) => {
-    acc[car.id] = car;
-    return acc;
-  }, {} as Record<string, Car>);
+  const carsById = useMemo(
+    () =>
+      cars.reduce((acc, car) => {
+        acc[car.id] = car;
+        return acc;
+      }, {} as Record<string, Car>),
+    [cars]
+  );
 
   return {
     cars,
     carsById,
     loading,
     error,
-    getCarById,
     fetchCars,
     addCar,
     updateCar,
     deleteCar,
+    getCarById,
   };
 }

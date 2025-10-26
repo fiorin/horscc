@@ -58,6 +58,7 @@ export function useCars({ ids, enabled = true }: UseCarsOptions = {}) {
       image_url: car.image_url?.replace(/\\/g, "/") ?? "",
       image_count: Number(car.image_count) || 0,
       buy_url: car.buy_url || null,
+      is_owned: !!car.is_owned,
     };
 
     const { data, error } = await supabase
@@ -74,9 +75,9 @@ export function useCars({ ids, enabled = true }: UseCarsOptions = {}) {
   async function updateCar(id: string, updates: Partial<Car>) {
     const cleaned = {
       ...updates,
-      image_url: updates.image_url?.replace(/\\/g, "/") ?? "",
-      image_count: Number(updates.image_count) || 0,
-      buy_url: updates.buy_url || null,
+      ...(updates.image_url
+        ? { image_url: updates.image_url.replace(/\\/g, "/") }
+        : {}),
     };
 
     const { data, error } = await supabase

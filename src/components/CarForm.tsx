@@ -44,6 +44,7 @@ export type CarFormData = {
   color: string;
   is_rubber_tires: boolean;
   is_metal_body: boolean;
+  is_owned: boolean;
   image_url: string;
   image_count: number;
   buy_url?: string;
@@ -69,6 +70,7 @@ export default function CarForm({
     color: "",
     is_rubber_tires: false,
     is_metal_body: false,
+    is_owned: initialData?.is_owned ?? false,
     image_url: "",
     image_count: 0,
     ...initialData,
@@ -246,6 +248,20 @@ export default function CarForm({
         value={form.buy_url || ""}
         onChange={handleChange}
       />
+
+      <div className="flex items-center gap-3">
+        <label htmlFor="is_owned" className="text-sm text-gray-300">
+          Do you own this car?
+        </label>
+        <input
+          id="is_owned"
+          type="checkbox"
+          name="is_owned"
+          checked={form.is_owned}
+          onChange={handleChange}
+          className="w-5 h-5 accent-green-500 cursor-pointer"
+        />
+      </div>
 
       <button
         type="submit"

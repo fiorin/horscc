@@ -54,6 +54,7 @@ export default function EditCarPage() {
           color: data.color,
           is_rubber_tires: Boolean(data.is_rubber_tires),
           is_metal_body: Boolean(data.is_metal_body),
+          is_owned: Boolean(data.is_owned),
           image_url: data.image_url ?? "",
           image_count: data.image_count,
           buy_url: data.buy_url ?? "",

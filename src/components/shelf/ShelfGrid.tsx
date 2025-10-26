@@ -17,20 +17,11 @@ export function ShelfGrid({ shelfId }: { shelfId: string }) {
   );
   const [loadingShelf, setLoadingShelf] = useState(true);
 
-  const {
-    shelf,
-    gridPositions,
-    gridX,
-    gridY,
-    swapCars,
-    assignCar,
-    removeCar,
-    fetchShelf,
-  } = useShelf(shelfId);
+  const { gridPositions, gridX, swapCars, assignCar, removeCar, fetchShelf } =
+    useShelf(shelfId);
 
   const { carsById, cars, loading: carsLoading } = useCars();
 
-  // Handle shelf loading visibility
   useEffect(() => {
     let ignore = false;
 
@@ -57,7 +48,7 @@ export function ShelfGrid({ shelfId }: { shelfId: string }) {
   );
 
   const availableCars = useMemo(
-    () => cars.filter((c) => !assignedCarIds.includes(c.id)),
+    () => cars.filter((c) => c.is_owned && !assignedCarIds.includes(c.id)),
     [cars, assignedCarIds]
   );
 

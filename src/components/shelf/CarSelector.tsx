@@ -2,9 +2,10 @@
 
 import Image from "next/image";
 import type { Car } from "@/types";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 
 export function CarSelector({
+  activeCell,
   availableCars,
   onSelect,
   onClose,
@@ -15,7 +16,18 @@ export function CarSelector({
   onClose: () => void;
 }) {
   const [open, setOpen] = useState(true);
+  const [filter, setFilter] = useState("");
   const selectorRef = useRef<HTMLDivElement>(null);
+
+  // Filter cars by name %like% and take first 10
+  const filteredCars = useMemo(() => {
+    return availableCars
+      .filter(
+        (car) =>
+          car.is_owned && car.name.toLowerCase().includes(filter.toLowerCase())
+      )
+      .slice(0, 10);
+  }, [availableCars, filter]);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -39,10 +51,21 @@ export function CarSelector({
         ref={selectorRef}
         className="bg-[#222] text-[#eee] border border-gray-700 rounded-lg shadow-lg max-h-[80vh] w-[90%] max-w-md overflow-y-auto"
       >
-        {availableCars.length === 0 ? (
+        {/* Filter Input */}
+        <div className="p-2">
+          <input
+            type="text"
+            placeholder="Filter by name..."
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+            className="w-full p-2 rounded bg-[#333] border border-gray-600 text-[#eee] placeholder-gray-400"
+          />
+        </div>
+
+        {filteredCars.length === 0 ? (
           <p className="p-4 text-gray-400 text-sm">No available cars</p>
         ) : (
-          availableCars.map((car) => (
+          filteredCars.map((car) => (
             <button
               key={car.id}
               onClick={() => onSelect(car.id)}

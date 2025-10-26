@@ -1,12 +1,21 @@
 "use client";
 
+import { useState, useMemo } from "react";
 import { useCars } from "@/hooks/useCars";
 import Link from "next/link";
 import Image from "next/image";
 import { PencilIcon, TrashIcon } from "@heroicons/react/24/solid";
+import { OwnedSwitch } from "@/components/OwnedSwitch";
 
 export default function CarsPage() {
   const { cars, loading, deleteCar } = useCars();
+  const [filter, setFilter] = useState<"all" | "owned" | "wanted">("all");
+
+  const filteredCars = useMemo(() => {
+    if (filter === "owned") return cars.filter((c) => c.is_owned);
+    if (filter === "wanted") return cars.filter((c) => !c.is_owned);
+    return cars;
+  }, [cars, filter]);
 
   if (loading) return <div className="p-8 text-center">Loading cars...</div>;
 
@@ -18,31 +27,62 @@ export default function CarsPage() {
 
   return (
     <div className="p-8">
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
         <h1 className="text-2xl font-bold text-[#eee]">
           My Hot Wheels Collection
         </h1>
-        <Link
-          href="/cars/add"
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-        >
-          Add Car
-        </Link>
+
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setFilter("all")}
+            className={`px-3 py-1 cursor-pointer rounded ${
+              filter === "all"
+                ? "bg-blue-600 text-white"
+                : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+            }`}
+          >
+            All
+          </button>
+          <button
+            onClick={() => setFilter("owned")}
+            className={`px-3 py-1 cursor-pointer rounded ${
+              filter === "owned"
+                ? "bg-green-600 text-white"
+                : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+            }`}
+          >
+            Owned
+          </button>
+          <button
+            onClick={() => setFilter("wanted")}
+            className={`px-3 py-1 cursor-pointer rounded ${
+              filter === "wanted"
+                ? "bg-yellow-600 text-white"
+                : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+            }`}
+          >
+            Wanted
+          </button>
+
+          <Link
+            href="/cars/add"
+            className="ml-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+          >
+            Add Car
+          </Link>
+        </div>
       </div>
 
-      {cars.length === 0 ? (
-        <p className="text-[#ccc]">No cars yet. Add your first one!</p>
+      {filteredCars.length === 0 ? (
+        <p className="text-[#ccc]">No cars found for this filter.</p>
       ) : (
         <ul className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-          {cars.map((car) => (
+          {filteredCars.map((car) => (
             <li
               key={car.id}
               className="relative border border-gray-700 rounded-lg p-4 shadow
                          bg-[#222] text-[#eee] hover:bg-[#333] transition-colors"
             >
-              {/* Clickable area (behind icons) */}
-
-              {/* Card content */}
               <div className="relative z-10 flex flex-col items-start">
                 <Link
                   href={`/cars/${car.id}`}
@@ -63,8 +103,8 @@ export default function CarsPage() {
                 )}
               </div>
 
-              {/* Action buttons */}
               <div className="absolute top-2 right-2 flex gap-2 z-20">
+                <OwnedSwitch carId={car.id} isOwned={car.is_owned} />
                 <Link
                   href={`/cars/edit/${car.id}`}
                   onClick={(e) => e.stopPropagation()}

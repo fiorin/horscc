@@ -1,15 +1,28 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useCars } from "@/hooks/useCars";
 import Link from "next/link";
 import Image from "next/image";
 import { PencilIcon, TrashIcon } from "@heroicons/react/24/solid";
 import { OwnedSwitch } from "@/components/OwnedSwitch";
+import { supabase } from "@/lib/supabaseClient";
 
 export default function CarsPage() {
   const { cars, loading, deleteCar } = useCars();
   const [filter, setFilter] = useState<"all" | "owned" | "wanted">("all");
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    const getUser = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      setUser(user);
+    };
+    getUser();
+  }, []);
 
   const filteredCars = useMemo(() => {
     if (filter === "owned") return cars.filter((c) => c.is_owned);
@@ -64,12 +77,14 @@ export default function CarsPage() {
             Wanted
           </button>
 
-          <Link
-            href="/cars/add"
-            className="ml-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-          >
-            Add Car
-          </Link>
+          {user && (
+            <Link
+              href="/cars/add"
+              className="ml-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+            >
+              Add Car
+            </Link>
+          )}
         </div>
       </div>
 
@@ -103,25 +118,27 @@ export default function CarsPage() {
                 )}
               </div>
 
-              <div className="absolute top-2 right-2 flex gap-2 z-20">
-                <OwnedSwitch carId={car.id} isOwned={car.is_owned} />
-                <Link
-                  href={`/cars/edit/${car.id}`}
-                  onClick={(e) => e.stopPropagation()}
-                  className="p-1 text-blue-400 hover:text-blue-500 transition-colors"
-                >
-                  <PencilIcon className="w-5 h-5" />
-                </Link>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDelete(car.id, car.name);
-                  }}
-                  className="p-1 text-red-400 hover:text-red-500 transition-colors cursor-pointer"
-                >
-                  <TrashIcon className="w-5 h-5" />
-                </button>
-              </div>
+              {user && (
+                <div className="absolute top-2 right-2 flex gap-2 z-20">
+                  <OwnedSwitch carId={car.id} isOwned={car.is_owned} />
+                  <Link
+                    href={`/cars/edit/${car.id}`}
+                    onClick={(e) => e.stopPropagation()}
+                    className="p-1 text-blue-400 hover:text-blue-500 transition-colors"
+                  >
+                    <PencilIcon className="w-5 h-5" />
+                  </Link>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDelete(car.id, car.name);
+                    }}
+                    className="p-1 text-red-400 hover:text-red-500 transition-colors cursor-pointer"
+                  >
+                    <TrashIcon className="w-5 h-5" />
+                  </button>
+                </div>
+              )}
             </li>
           ))}
         </ul>

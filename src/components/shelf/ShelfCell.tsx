@@ -13,6 +13,7 @@ export function ShelfCell({
   swapCars,
   setActiveCell,
   removeCar,
+  canEdit,
 }: {
   x: number;
   y: number;
@@ -24,6 +25,7 @@ export function ShelfCell({
   swapCars: (a: { x: number; y: number }, b: { x: number; y: number }) => void;
   setActiveCell: (pos: { x: number; y: number } | null) => void;
   removeCar: (x: number, y: number) => void;
+  canEdit: boolean;
 }) {
   const isDragging = dragging?.x === x && dragging?.y === y;
   const isHovered = hovered?.x === x && hovered?.y === y;
@@ -36,33 +38,38 @@ export function ShelfCell({
 
   return (
     <div
-      draggable={!!car}
-      onDragStart={() => setDragging({ x, y })}
+      draggable={!!car && canEdit}
+      onDragStart={() => {
+        console.log("Drag start", x, y, canEdit);
+        if (canEdit) setDragging({ x, y });
+      }}
       onDragEnd={() => {
         setDragging(null);
         setHovered(null);
       }}
       onDragOver={(e) => e.preventDefault()}
       onDragEnter={() => {
-        if (dragging) setHovered({ x, y });
+        if (dragging && canEdit) setHovered({ x, y });
       }}
       onDragLeave={() => setHovered(null)}
       onDrop={() => {
-        if (!dragging) return;
+        if (!canEdit || !dragging) return;
+        console.log("Before swap:", dragging, { x, y });
         swapCars(dragging, { x, y });
         setHovered(null);
       }}
-      onClick={() => !car && setActiveCell({ x, y })}
-      className={`cursor-pointer relative flex items-center justify-center border-2 transition-all w-full
-          shadow-[inset_0_0_8px_2px_rgba(0,0,0,0.2)]
-          ${car ? "border-gray-400" : "border-gray-500 bg-gray-50/30"}
-          ${
-            !car && isHovered && !isDragging
-              ? "bg-gray-300 border-gray-400 border-solid shadow-[inset_0_0_16px_4px_rgba(0,0,0,0.1)]"
-              : ""
-          }
-          ${isDragging ? "opacity-50" : ""}
-        `}
+      onClick={() => canEdit && !car && setActiveCell({ x, y })}
+      className={`relative flex items-center justify-center border-2 transition-all w-full
+        shadow-[inset_0_0_8px_2px_rgba(0,0,0,0.2)]
+        ${car ? "border-gray-400" : "border-gray-500 bg-gray-50/30"}
+        ${
+          !car && isHovered && !isDragging
+            ? "bg-gray-300 border-gray-400 border-solid shadow-[inset_0_0_16px_4px_rgba(0,0,0,0.1)]"
+            : ""
+        }
+        ${isDragging ? "opacity-50" : ""}
+        ${!canEdit ? "cursor-default" : "cursor-pointer"}
+      `}
       style={{
         aspectRatio: "7 / 4",
         maxWidth: "200px",
@@ -70,7 +77,10 @@ export function ShelfCell({
       }}
     >
       {car ? (
-        <CarImage car={car} onRemove={() => removeCar(x, y)} />
+        <CarImage
+          car={car}
+          onRemove={canEdit ? () => removeCar(x, y) : undefined}
+        />
       ) : (
         <div className="text-orange-400 opacity-60 text-4xl select-none"></div>
       )}

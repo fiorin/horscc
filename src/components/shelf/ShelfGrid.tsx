@@ -7,7 +7,13 @@ import { CarSelector } from "./CarSelector";
 import { ShelfOverlay } from "./ShelfOverlay";
 import { ShelfCell } from "./ShelfCell";
 
-export function ShelfGrid({ shelfId }: { shelfId: string }) {
+export function ShelfGrid({
+  shelfId,
+  canEdit,
+}: {
+  shelfId: string;
+  canEdit: boolean;
+}) {
   const [hovered, setHovered] = useState<{ x: number; y: number } | null>(null);
   const [dragging, setDragging] = useState<{ x: number; y: number } | null>(
     null
@@ -24,15 +30,12 @@ export function ShelfGrid({ shelfId }: { shelfId: string }) {
 
   useEffect(() => {
     let ignore = false;
-
     async function load() {
       setLoadingShelf(true);
       await fetchShelf();
       if (!ignore) setLoadingShelf(false);
     }
-
     if (shelfId) load();
-
     return () => {
       ignore = true;
     };
@@ -53,12 +56,20 @@ export function ShelfGrid({ shelfId }: { shelfId: string }) {
   );
 
   const handleSelect = (carId: string) => {
-    if (!activeCell) return;
+    if (!canEdit || !activeCell) return;
     assignCar(activeCell.x, activeCell.y, carId);
     setActiveCell(null);
   };
 
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // If not editable, replace all mutation actions with no-ops
+  const safeSwapCars = canEdit ? swapCars : () => {};
+  const safeAssignCar = canEdit ? assignCar : () => {};
+  const safeRemoveCar = canEdit ? removeCar : () => {};
+  const safeSetDragging = canEdit ? setDragging : () => {};
+  const safeSetHovered = canEdit ? setHovered : () => {};
+  const safeSetActiveCell = canEdit ? setActiveCell : () => {};
 
   return (
     <div ref={containerRef} className="relative p-4">
@@ -68,7 +79,9 @@ export function ShelfGrid({ shelfId }: { shelfId: string }) {
         </div>
       ) : (
         <div
-          className="grid gap-3 justify-items-center transition-opacity duration-200"
+          className={`grid gap-3 justify-items-center transition-opacity duration-200 ${
+            !canEdit ? "cursor-default" : ""
+          }`}
           style={{
             gridTemplateColumns: `repeat(${gridX}, minmax(0, 1fr))`,
             maxWidth: gridX * 200,
@@ -85,19 +98,20 @@ export function ShelfGrid({ shelfId }: { shelfId: string }) {
                 car={pos?.car_id ? carsById[pos.car_id] : null}
                 dragging={dragging}
                 hovered={hovered}
-                setDragging={setDragging}
-                setHovered={setHovered}
-                swapCars={swapCars}
-                setActiveCell={setActiveCell}
-                removeCar={removeCar}
+                setDragging={safeSetDragging}
+                setHovered={safeSetHovered}
+                swapCars={safeSwapCars}
+                setActiveCell={safeSetActiveCell}
+                removeCar={safeRemoveCar}
+                canEdit={canEdit}
               />
             ))
           )}
         </div>
       )}
 
-      {activeCell && <ShelfOverlay />}
-      {activeCell && (
+      {canEdit && activeCell && <ShelfOverlay />}
+      {canEdit && activeCell && (
         <CarSelector
           activeCell={activeCell}
           availableCars={availableCars}

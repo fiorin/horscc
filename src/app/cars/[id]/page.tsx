@@ -11,9 +11,9 @@ import {
   PencilIcon,
   TrashIcon,
 } from "@heroicons/react/24/solid";
+import { supabase } from "@/lib/supabaseClient";
 import { Car } from "@/types";
 
-// Swiper imports
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination, Autoplay } from "swiper/modules";
 import "swiper/css";
@@ -24,8 +24,21 @@ export default function CarDetailsPage() {
   const { id } = useParams();
   const router = useRouter();
   const { getCarById, deleteCar } = useCars();
+
   const [car, setCar] = useState<Car | null>(null);
   const [loading, setLoading] = useState(true);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      setUser(user);
+    };
+    fetchUser();
+  }, []);
 
   useEffect(() => {
     async function loadCar() {
@@ -59,25 +72,25 @@ export default function CarDetailsPage() {
         className="relative flex flex-col md:flex-row bg-[#222] text-[#eee] border border-gray-700 rounded-lg 
                    shadow-lg overflow-hidden w-full max-w-4xl"
       >
-        {/* Action buttons */}
-        <div className="absolute top-3 right-3 flex gap-2 z-20">
-          <Link
-            href={`/cars/edit/${car.id}`}
-            className="cursor-pointer p-2 text-blue-400 hover:text-blue-500 transition-colors"
-            title="Edit car"
-          >
-            <PencilIcon className="w-5 h-5" />
-          </Link>
-          <button
-            onClick={handleDelete}
-            className="cursor-pointer p-2 text-red-400 hover:text-red-500 transition-colors"
-            title="Delete car"
-          >
-            <TrashIcon className="w-5 h-5" />
-          </button>
-        </div>
+        {user && (
+          <div className="absolute top-3 right-3 flex gap-2 z-20">
+            <Link
+              href={`/cars/edit/${car.id}`}
+              className="cursor-pointer p-2 text-blue-400 hover:text-blue-500 transition-colors"
+              title="Edit car"
+            >
+              <PencilIcon className="w-5 h-5" />
+            </Link>
+            <button
+              onClick={handleDelete}
+              className="cursor-pointer p-2 text-red-400 hover:text-red-500 transition-colors"
+              title="Delete car"
+            >
+              <TrashIcon className="w-5 h-5" />
+            </button>
+          </div>
+        )}
 
-        {/* Left: Image */}
         <div className="md:w-1/2 flex items-center justify-center bg-[#111] border-r border-gray-700 p-6">
           <Image
             src={car.image_url ?? "/placeholder.jpg"}
@@ -89,7 +102,6 @@ export default function CarDetailsPage() {
           />
         </div>
 
-        {/* Right: Details */}
         <div className="md:w-1/2 p-6 flex flex-col gap-3">
           <h1 className="text-3xl font-bold">{car.name}</h1>
           {car.alias && (

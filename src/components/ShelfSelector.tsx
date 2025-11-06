@@ -2,35 +2,37 @@
 
 import type { Shelf } from "@/types";
 
-type ShelfSelectorProps = {
-  shelves: Shelf[];
-  selectedShelfId: string | null;
-  onChange: (id: string) => void;
-  loading?: boolean;
-};
-
 export function ShelfSelector({
   shelves,
   selectedShelfId,
   onChange,
-  loading = false,
-}: ShelfSelectorProps) {
-  if (loading) return <span>Loading shelves...</span>;
+  loading,
+  canEdit = false,
+}: {
+  shelves: Shelf[];
+  selectedShelfId: string | null;
+  onChange: (id: string | null) => void;
+  loading: boolean;
+  canEdit?: boolean;
+}) {
+  if (loading) return <div className="text-gray-400">Loading shelves...</div>;
 
   return (
-    <select
-      className="bg-gray-800 text-white px-2 py-1 rounded mb-4"
-      value={selectedShelfId ?? ""}
-      onChange={(e) => onChange(e.target.value)}
-    >
-      <option value="" disabled>
-        Select a shelf
-      </option>
-      {shelves.map((s) => (
-        <option key={s.id} value={s.id}>
-          {s.name}
-        </option>
+    <div className="flex gap-2 flex-wrap justify-center">
+      {shelves.map((shelf) => (
+        <button
+          key={shelf.id}
+          onClick={() => canEdit && onChange(shelf.id)} // 👈 disable click when not editable
+          disabled={!canEdit}
+          className={`px-4 py-2 rounded cursor-pointer ${
+            selectedShelfId === shelf.id
+              ? "bg-blue-600 text-white"
+              : "bg-gray-700 text-gray-300"
+          } ${!canEdit ? "opacity-50 cursor-default" : "hover:bg-blue-500"}`}
+        >
+          {shelf.name}
+        </button>
       ))}
-    </select>
+    </div>
   );
 }

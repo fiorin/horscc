@@ -8,7 +8,7 @@ export function CarImage({
   onRemove,
 }: {
   car: Car;
-  onRemove: () => void;
+  onRemove?: () => void;
 }) {
   return (
     <>
@@ -33,16 +33,18 @@ export function CarImage({
           <InformationCircleIcon className="w-4 h-4" />
         </Link>
 
-        <button
-          type="button"
-          className="text-red-400 hover:text-red-500 cursor-pointer opacity-10 hover:opacity-100 transition-opacity"
-          onClick={(e) => {
-            e.stopPropagation();
-            onRemove();
-          }}
-        >
-          <TrashIcon className="w-4 h-4" />
-        </button>
+        {onRemove && (
+          <button
+            type="button"
+            className="text-red-400 hover:text-red-500 cursor-pointer opacity-10 hover:opacity-100 transition-opacity"
+            onClick={(e) => {
+              e.stopPropagation();
+              onRemove();
+            }}
+          >
+            <TrashIcon className="w-4 h-4" />
+          </button>
+        )}
       </div>
     </>
   );

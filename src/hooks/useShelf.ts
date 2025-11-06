@@ -76,7 +76,6 @@ export function useShelf(shelfId: string) {
       )
   );
 
-  // Swap cars between two cells
   const swapCars = useCallback(
     async (
       source: { x: number; y: number },
@@ -85,28 +84,42 @@ export function useShelf(shelfId: string) {
       const src = positions.find((p) => p.x === source.x && p.y === source.y);
       const tgt = positions.find((p) => p.x === target.x && p.y === target.y);
 
-      if (!src || !tgt) return;
+      if (!src) return; // source must exist
 
-      const results = await Promise.all([
-        supabase
+      if (!tgt || !tgt.car_id) {
+        // Move car to empty position
+        await supabase
           .from("shelf_positions")
-          .update({ car_id: tgt.car_id })
-          .eq("x", src.x)
-          .eq("y", src.y)
-          .eq("shelf_id", shelfId),
-        supabase
-          .from("shelf_positions")
-          .update({ car_id: src.car_id })
-          .eq("x", tgt.x)
-          .eq("y", tgt.y)
-          .eq("shelf_id", shelfId),
-      ]);
+          .upsert(
+            { shelf_id: shelfId, x: target.x, y: target.y, car_id: src.car_id },
+            { onConflict: "shelf_id,x,y" }
+          );
 
-      if (results.some((r) => r.error)) {
-        console.error("Error swapping cars:", results);
+        await supabase
+          .from("shelf_positions")
+          .update({ car_id: null })
+          .eq("shelf_id", shelfId)
+          .eq("x", source.x)
+          .eq("y", source.y);
       } else {
-        await fetchShelf();
+        // Swap between two occupied cells
+        await Promise.all([
+          supabase
+            .from("shelf_positions")
+            .update({ car_id: tgt.car_id })
+            .eq("shelf_id", shelfId)
+            .eq("x", source.x)
+            .eq("y", source.y),
+          supabase
+            .from("shelf_positions")
+            .update({ car_id: src.car_id })
+            .eq("shelf_id", shelfId)
+            .eq("x", target.x)
+            .eq("y", target.y),
+        ]);
       }
+
+      await fetchShelf();
     },
     [positions, shelfId, fetchShelf]
   );

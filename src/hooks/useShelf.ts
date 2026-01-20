@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
+import { DEFAULT_GRID_X, DEFAULT_GRID_Y } from "@/lib/constants";
 import type { Shelf, ShelfPosition } from "@/types";
 
 export function useShelf(shelfId: string) {
@@ -64,8 +65,8 @@ export function useShelf(shelfId: string) {
     if (shelfId) fetchShelf();
   }, [shelfId, fetchShelf]);
 
-  const gridX = shelf?.grid_x ?? 2;
-  const gridY = shelf?.grid_y ?? 10;
+  const gridX = shelf?.grid_x ?? DEFAULT_GRID_X;
+  const gridY = shelf?.grid_y ?? DEFAULT_GRID_Y;
 
   const gridPositions: (ShelfPosition | null)[][] = Array.from(
     { length: gridY },

@@ -2,10 +2,11 @@
 
 import { useShelf } from "@/hooks/useShelf";
 import { useCars } from "@/hooks/useCars";
-import { useState, useRef, useMemo, useEffect } from "react";
+import { useState, useRef, useMemo } from "react";
 import { CarSelector } from "./CarSelector";
 import { ShelfOverlay } from "./ShelfOverlay";
 import { ShelfCell } from "./ShelfCell";
+import { MAX_CELL_WIDTH } from "@/lib/constants";
 
 export function ShelfGrid({
   shelfId,
@@ -21,25 +22,11 @@ export function ShelfGrid({
   const [activeCell, setActiveCell] = useState<{ x: number; y: number } | null>(
     null
   );
-  const [loadingShelf, setLoadingShelf] = useState(true);
 
-  const { gridPositions, gridX, swapCars, assignCar, removeCar, fetchShelf } =
+  const { gridPositions, gridX, swapCars, assignCar, removeCar, loading: shelfLoading } =
     useShelf(shelfId);
 
   const { carsById, cars, loading: carsLoading } = useCars();
-
-  useEffect(() => {
-    let ignore = false;
-    async function load() {
-      setLoadingShelf(true);
-      await fetchShelf();
-      if (!ignore) setLoadingShelf(false);
-    }
-    if (shelfId) load();
-    return () => {
-      ignore = true;
-    };
-  }, [shelfId, fetchShelf]);
 
   const assignedCarIds = useMemo(
     () =>
@@ -73,7 +60,7 @@ export function ShelfGrid({
 
   return (
     <div ref={containerRef} className="relative p-4">
-      {loadingShelf ? (
+      {shelfLoading ? (
         <div className="absolute inset-0 flex items-center justify-center bg-black/40 text-white z-20">
           Loading shelf...
         </div>
@@ -84,9 +71,8 @@ export function ShelfGrid({
           }`}
           style={{
             gridTemplateColumns: `repeat(${gridX}, minmax(0, 1fr))`,
-            maxWidth: gridX * 200,
+            maxWidth: gridX * MAX_CELL_WIDTH,
             margin: "0 auto",
-            opacity: loadingShelf ? 0 : 1,
           }}
         >
           {gridPositions.map((row, y) =>

@@ -1,6 +1,8 @@
 import "./globals.css";
 import Link from "next/link";
 import { UserNav } from "../components/UserNav";
+import { ErrorBoundary } from "../components/ErrorBoundary";
+import { ToastProvider } from "../components/ToastProvider";
 
 export const metadata = {
   title: "Horscc",
@@ -13,8 +15,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body className="min-h-screen text-gray-900">
+    <html lang="en" suppressHydrationWarning>
+      <body className="min-h-screen text-gray-900" suppressHydrationWarning>
+        <ToastProvider />
         <nav className="bg-[#111] text-[#eee] shadow mb-8">
           <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -29,7 +32,9 @@ export default function RootLayout({
           </div>
         </nav>
 
-        <main className="max-w-5xl mx-auto">{children}</main>
+        <ErrorBoundary>
+          <main className="max-w-5xl mx-auto">{children}</main>
+        </ErrorBoundary>
       </body>
     </html>
   );

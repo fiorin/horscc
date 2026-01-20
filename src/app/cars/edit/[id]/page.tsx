@@ -3,29 +3,23 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { useParams, useRouter } from "next/navigation";
+import { useAuth } from "@/hooks/useAuth";
+import { showToast } from "@/lib/toast";
 import CarForm, { CarFormData } from "@/components/CarForm";
 
 export default function EditCarPage() {
   const { id } = useParams();
   const router = useRouter();
+  const { user, loading: authLoading } = useAuth();
 
   const [initialData, setInitialData] = useState<CarFormData | null>(null);
   const [loading, setLoading] = useState(true);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
-    const getUser = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      setUser(user);
-      if (!user) {
-        router.replace("/login");
-      }
-    };
-    getUser();
-  }, [router]);
+    if (!authLoading && !user) {
+      router.replace("/login");
+    }
+  }, [user, authLoading, router]);
 
   useEffect(() => {
     if (!id) return;
@@ -42,7 +36,8 @@ export default function EditCarPage() {
 
         if (error) throw error;
         if (!data) {
-          alert("Car not found");
+          showToast.error("Car not found");
+          router.push("/cars");
           return;
         }
 
@@ -61,8 +56,9 @@ export default function EditCarPage() {
           buy_url: data.buy_url ?? "",
         });
       } catch (err) {
-        console.error("Error loading car:", err);
-        alert("Failed to load car. Check console.");
+        const message = err instanceof Error ? err.message : "Failed to load car";
+        showToast.error(message);
+        setLoading(false);
       } finally {
         setLoading(false);
       }
@@ -76,8 +72,7 @@ export default function EditCarPage() {
 
     try {
       const carId = Array.isArray(id) ? id[0].trim() : id.trim();
-
-      const { data: updatedData, error } = await supabase
+error } = await supabase
         .from("cars")
         .update({
           ...data,
@@ -85,15 +80,15 @@ export default function EditCarPage() {
           is_rubber_tires: Boolean(data.is_rubber_tires),
           is_metal_body: Boolean(data.is_metal_body),
         })
-        .eq("id", carId)
-        .select()
-        .maybeSingle();
+        .eq("id", carId);
 
       if (error) throw error;
 
+      showToast.success(`"${data.name}" updated!`);
       router.push("/cars");
     } catch (err) {
-      console.error("Error updating car:", err);
+      const message = err instanceof Error ? err.message : "Failed to update car";
+      showToast.error(messageerr);
       alert("Update failed. Check console.");
     }
   };

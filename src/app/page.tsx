@@ -4,24 +4,14 @@ import { useEffect, useState } from "react";
 import { ShelfGrid } from "@/components/shelf/ShelfGrid";
 import { ShelfSelector } from "@/components/ShelfSelector";
 import { supabase } from "@/lib/supabaseClient";
+import { useAuth } from "@/hooks/useAuth";
 import type { Shelf } from "@/types";
 
 export default function HomePage() {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [user, setUser] = useState<any>(null);
+  const { user } = useAuth();
   const [shelves, setShelves] = useState<Shelf[]>([]);
   const [selectedShelfId, setSelectedShelfId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const getUser = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      setUser(user);
-    };
-    getUser();
-  }, []);
 
   useEffect(() => {
     const fetchShelves = async () => {
@@ -41,8 +31,6 @@ export default function HomePage() {
 
     fetchShelves();
   }, []);
-
-  if (user === undefined) return <div>Loading user...</div>;
 
   return (
     <div className="px-6">

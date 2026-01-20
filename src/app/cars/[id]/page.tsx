@@ -5,13 +5,13 @@ import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { useCars } from "@/hooks/useCars";
+import { useAuth } from "@/hooks/useAuth";
 import {
   Cog6ToothIcon,
   TagIcon,
   PencilIcon,
   TrashIcon,
 } from "@heroicons/react/24/solid";
-import { supabase } from "@/lib/supabaseClient";
 import { Car } from "@/types";
 
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -24,21 +24,10 @@ export default function CarDetailsPage() {
   const { id } = useParams();
   const router = useRouter();
   const { getCarById, deleteCar } = useCars();
+  const { user } = useAuth();
 
   const [car, setCar] = useState<Car | null>(null);
   const [loading, setLoading] = useState(true);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [user, setUser] = useState<any>(null);
-
-  useEffect(() => {
-    const fetchUser = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      setUser(user);
-    };
-    fetchUser();
-  }, []);
 
   useEffect(() => {
     async function loadCar() {

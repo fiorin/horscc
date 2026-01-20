@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
+import { DEFAULT_IMAGE_COUNT, IMAGE_BASE_PATH } from "@/lib/constants";
 import type { Car } from "@/types";
 
 type UseCarsOptions = {
@@ -34,8 +35,8 @@ export function useCars({ ids, enabled = true }: UseCarsOptions = {}) {
 
       const cleanedData = (data ?? []).map((car) => ({
         ...car,
-        image_url: `/cars/${car.image_url?.replace(/\\/g, "/") ?? ""}`,
-        image_count: Number(car.image_count) || 0,
+        image_url: `${IMAGE_BASE_PATH}${car.image_url?.replace(/\\/g, "/") ?? ""}`,
+        image_count: Number(car.image_count) || DEFAULT_IMAGE_COUNT,
       }));
 
       setCars(cleanedData);
@@ -56,7 +57,7 @@ export function useCars({ ids, enabled = true }: UseCarsOptions = {}) {
     const cleanedCar = {
       ...car,
       image_url: car.image_url?.replace(/\\/g, "/") ?? "",
-      image_count: Number(car.image_count) || 0,
+      image_count: Number(car.image_count) || DEFAULT_IMAGE_COUNT,
       buy_url: car.buy_url || null,
       is_owned: !!car.is_owned,
     };
@@ -112,8 +113,8 @@ export function useCars({ ids, enabled = true }: UseCarsOptions = {}) {
 
     return {
       ...data,
-      image_url: `/cars/${data.image_url?.replace(/\\/g, "/") ?? ""}`,
-      image_count: Number(data.image_count) || 0,
+      image_url: `${IMAGE_BASE_PATH}${data.image_url?.replace(/\\/g, "/") ?? ""}`,
+      image_count: Number(data.image_count) || DEFAULT_IMAGE_COUNT,
       buy_url: data.buy_url || null,
     };
   }

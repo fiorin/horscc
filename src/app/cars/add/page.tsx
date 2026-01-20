@@ -2,15 +2,22 @@
 
 import { supabase } from "@/lib/supabaseClient";
 import { useRouter } from "next/navigation";
+import { showToast } from "@/lib/toast";
 import CarForm, { CarFormData } from "@/components/CarForm";
 
 export default function AddCarPage() {
   const router = useRouter();
 
   const handleSubmit = async (data: CarFormData) => {
-    const { error } = await supabase.from("cars").insert([data]);
-    if (!error) router.push("/cars");
-    else console.error(error);
+    try {
+      const { error } = await supabase.from("cars").insert([data]);
+      if (error) throw error;
+      showToast.success(`"${data.name}" added to collection!`);
+      router.push("/cars");
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Failed to add car";
+      showToast.error(message);
+    }
   };
 
   return (

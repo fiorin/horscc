@@ -68,7 +68,7 @@ export default function EditCarPage() {
     };
 
     loadCar();
-  }, [id, user]);
+  }, [id, user, router]);
 
   const handleSubmit = async (data: CarFormData) => {
     if (!id || !user) return;

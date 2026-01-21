@@ -48,6 +48,9 @@ export type CarFormData = {
   image_url: string;
   image_count: number;
   buy_url?: string;
+  acquired_at?: string;
+  rarity?: "regular" | "premium" | "exclusive" | null;
+  estimated_value?: number | null;
 };
 
 type CarFormProps = {
@@ -73,6 +76,9 @@ export default function CarForm({
     is_owned: initialData?.is_owned ?? false,
     image_url: "",
     image_count: 0,
+    acquired_at: "",
+    rarity: null,
+    estimated_value: null,
     ...initialData,
   });
 
@@ -85,6 +91,10 @@ export default function CarForm({
           ? initialData.image_url.replace(/\\/g, "/")
           : "",
         image_count: Number(initialData.image_count) || 0,
+        estimated_value: initialData.estimated_value ? Number(initialData.estimated_value) : null,
+        acquired_at: initialData.acquired_at
+          ? new Date(initialData.acquired_at).toISOString().split('T')[0]
+          : "",
       }));
     }
   }, [initialData]);
@@ -116,6 +126,9 @@ export default function CarForm({
       ...form,
       year: Number(form.year),
       image_count: Number(form.image_count) || 0,
+      acquired_at: form.acquired_at ? form.acquired_at : undefined,
+      estimated_value: form.estimated_value ? Number(form.estimated_value) : undefined,
+      rarity: form.rarity ? form.rarity : undefined,
     });
   };
 
@@ -247,6 +260,38 @@ export default function CarForm({
         className={inputBase}
         value={form.buy_url || ""}
         onChange={handleChange}
+      />
+
+      <input
+        type="date"
+        name="acquired_at"
+        placeholder="Date acquired"
+        className={inputBase}
+        value={form.acquired_at || ""}
+        onChange={handleChange}
+      />
+
+      <select
+        name="rarity"
+        className={inputBase}
+        value={form.rarity || ""}
+        onChange={handleChange}
+      >
+        <option value="">Select rarity (optional)</option>
+        <option value="regular">Regular</option>
+        <option value="premium">Premium</option>
+        <option value="exclusive">Exclusive</option>
+      </select>
+
+      <input
+        type="number"
+        name="estimated_value"
+        placeholder="Estimated value ($)"
+        className={inputBase}
+        value={form.estimated_value || ""}
+        onChange={handleChange}
+        step="0.01"
+        min="0"
       />
 
       <div className="flex items-center gap-3">

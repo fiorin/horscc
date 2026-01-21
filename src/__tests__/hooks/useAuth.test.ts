@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { renderHook, act } from "@testing-library/react";
-import { useAuth } from "../src/hooks/useAuth";
+import { renderHook } from "@testing-library/react";
+import { useAuth } from "@/hooks/useAuth";
 
 // Mock Supabase
-vi.mock("../src/lib/supabaseClient", () => ({
+vi.mock("@/lib/supabaseClient", () => ({
   supabase: {
     auth: {
       getUser: vi.fn(),

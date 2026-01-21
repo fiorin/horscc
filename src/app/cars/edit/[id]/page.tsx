@@ -54,6 +54,9 @@ export default function EditCarPage() {
           image_url: data.image_url ?? "",
           image_count: data.image_count,
           buy_url: data.buy_url ?? "",
+          acquired_at: data.acquired_at ?? "",
+          rarity: data.rarity ?? null,
+          estimated_value: data.estimated_value ?? null,
         });
       } catch (err) {
         const message = err instanceof Error ? err.message : "Failed to load car";
@@ -72,7 +75,7 @@ export default function EditCarPage() {
 
     try {
       const carId = Array.isArray(id) ? id[0].trim() : id.trim();
-error } = await supabase
+      const { error } = await supabase
         .from("cars")
         .update({
           ...data,
@@ -88,7 +91,7 @@ error } = await supabase
       router.push("/cars");
     } catch (err) {
       const message = err instanceof Error ? err.message : "Failed to update car";
-      showToast.error(messageerr);
+      showToast.error(message);
       alert("Update failed. Check console.");
     }
   };

@@ -52,6 +52,7 @@ export function ShelfGrid({
 
   // If not editable, replace all mutation actions with no-ops
   const safeSwapCars = canEdit ? swapCars : () => {};
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const safeAssignCar = canEdit ? assignCar : () => {};
   const safeRemoveCar = canEdit ? removeCar : () => {};
   const safeSetDragging = canEdit ? setDragging : () => {};

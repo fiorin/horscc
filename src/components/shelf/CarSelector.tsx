@@ -5,7 +5,7 @@ import type { Car } from "@/types";
 import { useState, useRef, useEffect, useMemo } from "react";
 
 export function CarSelector({
-  activeCell,
+  activeCell, // eslint-disable-line @typescript-eslint/no-unused-vars
   availableCars,
   onSelect,
   onClose,

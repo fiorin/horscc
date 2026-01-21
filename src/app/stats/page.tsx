@@ -2,8 +2,9 @@
 
 import { useMemo } from "react";
 import { useCars } from "@/hooks/useCars";
-import { BrandPieChart, ColorBarChart, PieChartCard } from "./Charts";
+import { BrandPieChart, ColorBarChart, PieChartCard, GrowthLineChart } from "./Charts";
 import { Summary } from "./Summary";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 export default function StatsPage() {
   const { cars, loading, error } = useCars();
@@ -24,12 +25,15 @@ export default function StatsPage() {
     );
 
   return (
-    <div className="p-8 space-y-12">
+    <ErrorBoundary>
+      <div className="p-8 space-y-12">
       <h1 className="text-3xl font-bold text-[#eee] mb-6">
         Owned Collection Stats
       </h1>
 
       <Summary cars={ownedCars} />
+
+      <GrowthLineChart cars={ownedCars} />
 
       <BrandPieChart cars={ownedCars} />
       <ColorBarChart cars={ownedCars} />
@@ -45,6 +49,7 @@ export default function StatsPage() {
         title="Car Material"
         labels={["All Metal", "Mixed"]}
       />
-    </div>
+      </div>
+    </ErrorBoundary>
   );
 }

@@ -1,36 +1,92 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Hot Wheels Collection :racing_car:
 
-## Getting Started
+### _The Next.js Hot Wheels collection management system_
 
-First, run the development server:
+**by** [![N|Solid](http://fior.in/img/fiorin.png)](http://fior.in)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## .: Frontend :.
+
+#### Click [here to see the preview](public/preview.png)
+![](public/preview.png)
+
+The project was conceived as a comprehensive Hot Wheels diecast collection management system with timeline tracking, statistics, virtual shelf display, and acquisition history.
+
+The following technologies were used in the frontend development:
+
+| What?       | For what?              |
+| ----------- | ---------------------- |
+| Next.js     | Front-end structure.   |
+| pnpm        | Dependency management. |
+| Typescript  | Language used.         |
+| TailwindCSS | Styling framework.     |
+| Supabase    | Backend & Database.    |
+| Heroicons   | Icon library.          |
+| Recharts    | Charts & Statistics.   |
+| Swiper      | Image gallery slider.  |
+| React DnD   | Drag-and-drop shelf.   |
+| Vitest      | Testing framework.     |
+
+### Execution requirements
+
+- Node.js
+- pnpm (or npm)
+- Supabase account & project
+
+### Environment Setup
+
+Create a `.env.local` file with your Supabase credentials:
+
+```
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Installation & Running
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+To prepare the environment and run the application, run the commands:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```sh
+$ pnpm install
+$ pnpm run build
+$ pnpm run start
+```
 
-## Learn More
+The application will be available at:
 
-To learn more about Next.js, take a look at the following resources:
+```sh
+http://localhost:3000
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Or running the development mode
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+To run the application in the dev mode, run the commands:
 
-## Deploy on Vercel
+```sh
+$ pnpm install
+$ pnpm run dev
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Testing & Linting
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+To run tests and lint checks:
+
+```sh
+$ pnpm test          # Run tests in watch mode
+$ pnpm test --run    # Run tests once
+$ pnpm test:coverage # Run tests with coverage
+$ pnpm lint          # Run ESLint
+```
+
+**by** [![N|Solid](http://fior.in/img/fiorin.png)](http://fior.in)
+
+---
+
+#### Useful links
+
+- [Next.js](https://nextjs.org/)
+- [Supabase](https://supabase.com/)
+- [TailwindCSS](https://tailwindcss.com/)
+- [Heroicons](https://heroicons.com/)
+- [Recharts](https://recharts.org/)
+- [Swiper](https://swiperjs.com/)
+

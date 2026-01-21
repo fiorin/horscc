@@ -1,5 +1,6 @@
 import "@testing-library/jest-dom";
 import { vi } from "vitest";
+import React from "react";
 
 // Mock next/navigation
 vi.mock("next/navigation", () => ({
@@ -21,13 +22,12 @@ vi.mock("next/navigation", () => ({
 // Mock next/link
 vi.mock("next/link", () => {
   return {
-    default: ({ children, href }: any) => (
-      <a href={href}>{children}</a>
-    ),
+    default: ({ children, href }: any) => // eslint-disable-line @typescript-eslint/no-explicit-any
+      React.createElement("a", { href }, children),
   };
 });
 
 // Mock next/image
 vi.mock("next/image", () => ({
-  default: (props: any) => <img {...props} />,
+  default: (props: any) => React.createElement("img", props), // eslint-disable-line @typescript-eslint/no-explicit-any
 }));

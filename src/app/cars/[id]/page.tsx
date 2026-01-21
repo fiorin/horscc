@@ -13,6 +13,7 @@ import {
   TrashIcon,
 } from "@heroicons/react/24/solid";
 import { Car } from "@/types";
+import { RARITY_COLORS, RARITY_ICONS } from "@/lib/rarityConfig";
 
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination, Autoplay } from "swiper/modules";
@@ -93,6 +94,14 @@ export default function CarDetailsPage() {
 
         <div className="md:w-1/2 p-6 flex flex-col gap-3">
           <h1 className="text-3xl font-bold">{car.name}</h1>
+          {car.rarity && (
+            <span
+              className={`inline-flex items-center gap-2 text-sm font-semibold px-3 py-1 rounded-full border border-gray-700 bg-[#111] ${RARITY_COLORS[car.rarity] ?? "text-gray-300"}`}
+            >
+              <span aria-hidden="true">{RARITY_ICONS[car.rarity] ?? "★"}</span>
+              <span className="capitalize">{car.rarity}</span>
+            </span>
+          )}
           {car.alias && (
             <p className="text-gray-400 italic text-sm">“{car.alias}”</p>
           )}
@@ -114,6 +123,22 @@ export default function CarDetailsPage() {
               <span className="font-semibold text-gray-200">Color:</span>{" "}
               {car.color ?? "—"}
             </p>
+            {car.estimated_value !== null && car.estimated_value !== undefined && (
+              <p>
+                <span className="font-semibold text-gray-200">Est. value:</span>{" "}
+                ${car.estimated_value.toLocaleString()}
+              </p>
+            )}
+            {car.acquired_at && (
+              <p>
+                <span className="font-semibold text-gray-200">Acquired:</span>{" "}
+                {new Date(car.acquired_at).toLocaleDateString("en-US", {
+                  year: "numeric",
+                  month: "short",
+                  day: "numeric",
+                })}
+              </p>
+            )}
           </div>
 
           <div className="mt-4 flex items-center gap-4">

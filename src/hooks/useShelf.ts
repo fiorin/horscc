@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { DEFAULT_GRID_X, DEFAULT_GRID_Y } from "@/lib/constants";
 import type { Shelf, ShelfPosition } from "@/types";
@@ -10,6 +10,12 @@ export function useShelf(shelfId: string) {
   const [positions, setPositions] = useState<ShelfPosition[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+
+  // Build a map for O(1) position lookups
+  const positionMap = useMemo(
+    () => new Map(positions.map((p) => [`${p.x}-${p.y}`, p])),
+    [positions]
+  );
 
   const fetchShelf = useCallback(async () => {
     setLoading(true);
@@ -29,7 +35,6 @@ export function useShelf(shelfId: string) {
         return;
       }
 
-      console.log("Fetched shelf data:", shelfData);
       const newShelf: Shelf = {
         id: shelfData.id,
         name: shelfData.name,
@@ -65,6 +70,30 @@ export function useShelf(shelfId: string) {
     if (shelfId) fetchShelf();
   }, [shelfId, fetchShelf]);
 
+  // Subscribe to real-time updates
+  useEffect(() => {
+    const channel = supabase
+      .channel(`shelf:${shelfId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "shelf_positions",
+          filter: `shelf_id=eq.${shelfId}`,
+        },
+        () => {
+          // Refetch on any change (can be optimized further)
+          fetchShelf();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [shelfId, fetchShelf]);
+
   const gridX = shelf?.grid_x ?? DEFAULT_GRID_X;
   const gridY = shelf?.grid_y ?? DEFAULT_GRID_Y;
 
@@ -73,7 +102,7 @@ export function useShelf(shelfId: string) {
     (_, y) =>
       Array.from(
         { length: gridX },
-        (_, x) => positions.find((p) => p.x === x && p.y === y) ?? null
+        (_, x) => positionMap.get(`${x}-${y}`) ?? null
       )
   );
 
@@ -82,28 +111,61 @@ export function useShelf(shelfId: string) {
       source: { x: number; y: number },
       target: { x: number; y: number }
     ) => {
-      const src = positions.find((p) => p.x === source.x && p.y === source.y);
-      const tgt = positions.find((p) => p.x === target.x && p.y === target.y);
+      const src = positionMap.get(`${source.x}-${source.y}`);
+      const tgt = positionMap.get(`${target.x}-${target.y}`);
 
       if (!src) return; // source must exist
 
+      // Optimistic update
+      const newPositions = [...positions];
+      
       if (!tgt || !tgt.car_id) {
         // Move car to empty position
-        await supabase
-          .from("shelf_positions")
-          .upsert(
-            { shelf_id: shelfId, x: target.x, y: target.y, car_id: src.car_id },
-            { onConflict: "shelf_id,x,y" }
-          );
-
-        await supabase
-          .from("shelf_positions")
-          .update({ car_id: null })
-          .eq("shelf_id", shelfId)
-          .eq("x", source.x)
-          .eq("y", source.y);
+        newPositions[newPositions.indexOf(src)] = {
+          ...src,
+          x: target.x,
+          y: target.y,
+        };
+        const emptyPos = newPositions.find(
+          (p) => p.x === source.x && p.y === source.y
+        );
+        if (emptyPos) {
+          emptyPos.car_id = null;
+        } else {
+          newPositions.push({
+            shelf_id: shelfId,
+            x: source.x,
+            y: source.y,
+            car_id: null,
+          } as ShelfPosition);
+        }
       } else {
         // Swap between two occupied cells
+        const srcIdx = newPositions.indexOf(src);
+        const tgtIdx = newPositions.indexOf(tgt);
+        if (srcIdx >= 0) newPositions[srcIdx] = { ...src, x: target.x, y: target.y };
+        if (tgtIdx >= 0) newPositions[tgtIdx] = { ...tgt, x: source.x, y: source.y };
+      }
+
+      setPositions(newPositions);
+
+      // Persist to server
+      if (!tgt || !tgt.car_id) {
+        await Promise.all([
+          supabase
+            .from("shelf_positions")
+            .upsert(
+              { shelf_id: shelfId, x: target.x, y: target.y, car_id: src.car_id },
+              { onConflict: "shelf_id,x,y" }
+            ),
+          supabase
+            .from("shelf_positions")
+            .update({ car_id: null })
+            .eq("shelf_id", shelfId)
+            .eq("x", source.x)
+            .eq("y", source.y),
+        ]);
+      } else {
         await Promise.all([
           supabase
             .from("shelf_positions")
@@ -119,40 +181,56 @@ export function useShelf(shelfId: string) {
             .eq("y", target.y),
         ]);
       }
-
-      await fetchShelf();
     },
-    [positions, shelfId, fetchShelf]
+    [positions, shelfId, positionMap]
   );
 
   // Assign a car to a specific cell
   const assignCar = useCallback(
     async (x: number, y: number, carId: string | null) => {
+      // Optimistic update
+      const newPositions = positions.filter((p) => !(p.x === x && p.y === y));
+      
+      if (carId) {
+        newPositions.push({
+          shelf_id: shelfId,
+          x,
+          y,
+          car_id: carId,
+        } as ShelfPosition);
+      }
+      
+      setPositions(newPositions);
+
+      // Persist to server
       await supabase
         .from("shelf_positions")
         .upsert(
           { shelf_id: shelfId, x, y, car_id: carId },
           { onConflict: "shelf_id,x,y" }
         );
-
-      await fetchShelf();
     },
-    [shelfId, fetchShelf]
+    [positions, shelfId]
   );
 
   // Remove a car from a specific cell
   const removeCar = useCallback(
     async (x: number, y: number) => {
+      // Optimistic update
+      const newPositions = positions.map((p) =>
+        p.x === x && p.y === y ? { ...p, car_id: null } : p
+      );
+      setPositions(newPositions);
+
+      // Persist to server
       await supabase
         .from("shelf_positions")
         .update({ car_id: null })
         .eq("shelf_id", shelfId)
         .eq("x", x)
         .eq("y", y);
-
-      await fetchShelf();
     },
-    [shelfId, fetchShelf]
+    [positions, shelfId]
   );
 
   return {

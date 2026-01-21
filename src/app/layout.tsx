@@ -23,6 +23,7 @@ export default function RootLayout({
             <div className="flex items-center gap-4">
               <Link href="/">Home</Link>
               <Link href="/cars">Cars</Link>
+              <Link href="/timeline">Timeline</Link>
               <Link href="/stats">Stats</Link>
               <Link href="/about">About</Link>
               <Link href="/login">Login</Link>

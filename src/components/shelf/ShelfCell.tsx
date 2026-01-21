@@ -40,7 +40,6 @@ export function ShelfCell({
     <div
       draggable={!!car && canEdit}
       onDragStart={() => {
-        console.log("Drag start", x, y, canEdit);
         if (canEdit) setDragging({ x, y });
       }}
       onDragEnd={() => {
@@ -54,7 +53,6 @@ export function ShelfCell({
       onDragLeave={() => setHovered(null)}
       onDrop={() => {
         if (!canEdit || !dragging) return;
-        console.log("Before swap:", dragging, { x, y });
         swapCars(dragging, { x, y });
         setHovered(null);
       }}

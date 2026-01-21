@@ -14,6 +14,8 @@ export function useCars({ ids, enabled = true }: UseCarsOptions = {}) {
   const [cars, setCars] = useState<Car[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  const [isOffline, setIsOffline] = useState(false);
+  const [lastFetchSucceeded, setLastFetchSucceeded] = useState(false);
 
   const memoizedIds = useMemo(() => ids ?? undefined, [ids]);
 
@@ -21,6 +23,8 @@ export function useCars({ ids, enabled = true }: UseCarsOptions = {}) {
     if (!enabled) return;
     setLoading(true);
     setError(null);
+    setIsOffline(false);
+    setLastFetchSucceeded(false);
 
     try {
       let query = supabase
@@ -30,20 +34,43 @@ export function useCars({ ids, enabled = true }: UseCarsOptions = {}) {
 
       if (memoizedIds?.length) query = query.in("id", memoizedIds);
 
-      const { data, error } = await query;
+      // add a short timeout so the UI can fall back if the DB is unreachable
+      const TIMEOUT_MS = 5000;
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const queryPromise = query as any;
+      const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("timeout")), TIMEOUT_MS));
+
+      const { data, error } = await Promise.race([queryPromise, timeoutPromise]);
       if (error) throw error;
 
-      const cleanedData = (data ?? []).map((car) => ({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const cleanedData = (data ?? []).map((car: any) => ({
         ...car,
         image_url: `${IMAGE_BASE_PATH}${car.image_url?.replace(/\\/g, "/") ?? ""}`,
         image_count: Number(car.image_count) || DEFAULT_IMAGE_COUNT,
       }));
 
       setCars(cleanedData);
+      setLastFetchSucceeded(true);
     } catch (err) {
       console.error(err);
-      setError(err as Error);
-      setCars([]);
+      // try to load cached cars from localStorage when DB/network fails
+      const cached = typeof window !== "undefined" ? localStorage.getItem("cars_cache_v1") : null;
+      if (cached) {
+        try {
+          const parsed: Car[] = JSON.parse(cached);
+          setCars(parsed);
+          setIsOffline(true);
+          setError(null);
+        } catch {
+          setError(err as Error);
+          setCars([]);
+        }
+      } else {
+        setError(err as Error);
+        setCars([]);
+      }
     } finally {
       setLoading(false);
     }
@@ -70,6 +97,7 @@ export function useCars({ ids, enabled = true }: UseCarsOptions = {}) {
 
     if (error) throw error;
     setCars((prev) => [data, ...prev]);
+    setLastFetchSucceeded(true);
     return data;
   }
 
@@ -90,6 +118,7 @@ export function useCars({ ids, enabled = true }: UseCarsOptions = {}) {
 
     if (error) throw error;
     setCars((prev) => prev.map((c) => (c.id === id ? data : c)));
+    setLastFetchSucceeded(true);
     return data;
   }
 
@@ -97,6 +126,7 @@ export function useCars({ ids, enabled = true }: UseCarsOptions = {}) {
     const { error } = await supabase.from("cars").delete().eq("id", id);
     if (error) throw error;
     setCars((prev) => prev.filter((c) => c.id !== id));
+    setLastFetchSucceeded(true);
   }
 
   async function getCarById(id: string) {
@@ -108,7 +138,9 @@ export function useCars({ ids, enabled = true }: UseCarsOptions = {}) {
 
     if (error) {
       console.error(error);
-      return null;
+      // fallback to cached carsById if available
+      const cached = carsById[id];
+      return cached ?? null;
     }
 
     return {
@@ -128,11 +160,23 @@ export function useCars({ ids, enabled = true }: UseCarsOptions = {}) {
     [cars]
   );
 
+  // persist successful fetches to localStorage
+  useEffect(() => {
+    if (lastFetchSucceeded && typeof window !== "undefined") {
+      try {
+        localStorage.setItem("cars_cache_v1", JSON.stringify(cars));
+      } catch {
+        // ignore storage errors
+      }
+    }
+  }, [cars, lastFetchSucceeded]);
+
   return {
     cars,
     carsById,
     loading,
     error,
+    isOffline,
     fetchCars,
     addCar,
     updateCar,

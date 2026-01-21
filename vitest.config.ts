@@ -4,6 +4,11 @@ import path from "path";
 
 export default defineConfig({
   plugins: [react()],
+  css: {
+    postcss: {
+      plugins: [],
+    },
+  },
   test: {
     globals: true,
     environment: "jsdom",
@@ -12,6 +17,11 @@ export default defineConfig({
       provider: "v8",
       reporter: ["text", "json", "html"],
       exclude: ["node_modules/", "src/__tests__/"],
+    },
+    css: {
+      modules: {
+        classNameStrategy: "non-scoped",
+      },
     },
   },
   resolve: {

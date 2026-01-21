@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { showToast } from "../../src/lib/toast";
+import { showToast } from "@/lib/toast";
 import toast from "react-hot-toast";
 
 // Mock react-hot-toast

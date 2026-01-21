@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, memo } from "react";
-import type { Car } from "@/types";
+import { Car } from "@/types";
 import { useCars } from "@/hooks/useCars";
 import { useAuth } from "@/hooks/useAuth";
 import { useDebounce } from "@/hooks/useDebounce";
